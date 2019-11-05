@@ -26,7 +26,7 @@ enum alt_keys {
     _KEY_TAB, _KEY_Q, _KEY_W, _KEY_E, _KEY_R, _KEY_T, _KEY_Y, _KEY_U, _KEY_I, _KEY_O, _KEY_P, _KEY_LBRC, _KEY_RBRC, _KEY_BSLS, _KEY_HOME, 
     _KEY_CAPS, _KEY_A, _KEY_S, _KEY_D, _KEY_F, _KEY_G, _KEY_H, _KEY_J, _KEY_K, _KEY_L, _KEY_SCLN, _KEY_QUOT, _KEY_ENT, _KEY_PGUP, 
     _KEY_LSFT, _KEY_Z, _KEY_X, _KEY_C, _KEY_V, _KEY_B, _KEY_N, _KEY_M, _KEY_COMM, _KEY_DOT, _KEY_SLSH, _KEY_RSFT, _KEY_UP, _KEY_PGDN, 
-    _KEY_LCTL, _KEY_LALT, _KEY_LGUI, _KEY_SPC, _KEY_RGUI, _KEY_FN, _KEY_LEFT, _KEY_DOWN, _KEY_RGHT, 
+    _KEY_LCTL, _KEY_LALT, _KEY_LGUI, _KEY_SPC, _KEY_RGUI, _KEY_FN, _KEY_LEFT, _KEY_DOWN, _KEY_RIGHT, 
 };
 
 int row_col_to_i(int row, int col){
@@ -42,18 +42,18 @@ int row_col_to_i(int row, int col){
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QWERTY] = LAYOUT_65_ansi_blocker(
-        KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS, KC_EQL,  KC_BSPC, KC_DEL,  \
+        KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS, KC_EQL,  KC_BSPC, KC_DEL,  \
         KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC, KC_RBRC, KC_BSLS, KC_HOME, \
-        KC_CAPS, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,          KC_ENT,  KC_PGUP, \
+        KC_ESC , KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,          KC_ENT,  KC_PGUP, \
         KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,          KC_UP,   KC_PGDN, \
         KC_LCTL, KC_LALT, KC_LGUI,                            KC_SPC,                             KC_RGUI, MO(_FUNC),KC_LEFT,KC_DOWN, KC_RGHT  \
     ),
     [_FUNC] = LAYOUT_65_ansi_blocker(
-        KC_GRV,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  _______, KC_MUTE, \
-        _______, RGB_MOD, RGB_HUI, _______, _______ ,_______, _______, U_T_AUTO,U_T_AGCR,_______, KC_PSCR, KC_SLCK, KC_PAUS, _______, KC_END, \
-        _______, _______, RGB_HUD, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______, KC_VOLU, \
-        _______, _______, _______, _______, _______, MD_BOOT, TG_NKRO, DBG_TOG,TG(_NUM), _______, _______, _______,          KC_PGUP, KC_VOLD, \
-        _______, _______, _______,                            _______,                            _______, _______, KC_HOME, KC_PGDN, KC_END  \
+        _______,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11, KC_F12,  _______, KC_MUTE, \
+        _______, RGB_MOD, RGB_VAI, _______, _______ ,_______, _______, U_T_AUTO,U_T_AGCR,_______, _______, KC_SLCK, KC_PAUS, _______, KC_END, \
+        _______, _______, RGB_VAD, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______, KC_VOLU, \
+        _______, _______, _______, _______, _______, MD_BOOT, TG_NKRO, DBG_TOG,TG(_NUM), _______, _______, _______,          _______, KC_VOLD, \
+        _______, _______, _______,                            _______,                            _______, _______, KC_MRWD, KC_MPLY, KC_MFFD\
     ),
     [_NUM] = LAYOUT(
         TG(_NUM),_______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
@@ -89,7 +89,7 @@ void keyboard_post_init_user(void) {
     user_config.raw = eeconfig_read_user();
   
     rgb_matrix_set_flags(LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER);
-    rgb_matrix_sethsv(0,0,0xFF/2);
+    rgb_matrix_sethsv(0,0,0xFF);
 
   // Set default layer, if enabled
 }
@@ -207,9 +207,20 @@ void rgb_matrix_indicators_user(void) {
             case _QWERTY: 
                 break;
             case _FUNC:
-                //rgb_matrix_set_color_all(RGB_BLUE);
+                rgb_matrix_set_color_all(0,0,0);
+                for(int i = _KEY_1; i <= _KEY_EQL; i++){
+                    rgb_matrix_set_color(i, RGB_BLUE);
+                }
+                rgb_matrix_set_color(_KEY_COMM, RGB_GREEN);
+                rgb_matrix_set_color(_KEY_LBRC, RGB_WHITE);
+                rgb_matrix_set_color(_KEY_RBRC, RGB_WHITE);
+                rgb_matrix_set_color(_KEY_W, RGB_WHITE);
+                rgb_matrix_set_color(_KEY_S, RGB_WHITE);
+                int media[] = {_KEY_PGUP, _KEY_PGDN, _KEY_DEL, _KEY_LEFT, _KEY_DOWN, _KEY_RIGHT};
+                rgb_matrix_set_color_array(media, sizeof(media)/sizeof(media[0]), RGB_RED);
                 break;
             case _NUM: {
+                rgb_matrix_set_color_all(0,0,0);
                 int keys[] = {_KEY_U,_KEY_I,_KEY_O ,_KEY_J, _KEY_K, _KEY_L,_KEY_M,_KEY_COMM,_KEY_DOT,_KEY_SPC,_KEY_CAPS, _KEY_ESC};
                 rgb_matrix_set_color_array(keys, sizeof(keys)/sizeof(keys[0]), RGB_GREEN);
                 break;
