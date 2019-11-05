@@ -9,7 +9,8 @@ enum alt_keycodes {
     DBG_MOU,               //DEBUG Toggle Mouse Prints
     MD_BOOT,               //Restart into bootloader after hold timeout
 
-    RGB_HUI2
+    RGB_HUI2,
+    NUM_ENT
 };
 
 #define TG_NKRO MAGIC_TOGGLE_NKRO //Toggle 6KRO / NKRO mode
@@ -51,7 +52,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_FUNC] = LAYOUT_65_ansi_blocker(
         _______,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11, KC_F12,  _______, KC_MUTE, \
         _______, RGB_MOD, RGB_VAI, _______, _______ ,_______, _______, U_T_AUTO,U_T_AGCR,_______, _______, KC_SLCK, KC_PAUS, _______, KC_END, \
-        _______, _______, RGB_VAD, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______, KC_VOLU, \
+        _______, RGB_TOG, RGB_VAD, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______, KC_VOLU, \
         _______, _______, _______, _______, _______, MD_BOOT, TG_NKRO, DBG_TOG,TG(_NUM), _______, _______, _______,          _______, KC_VOLD, \
         _______, _______, _______,                            _______,                            _______, _______, KC_MRWD, KC_MPLY, KC_MFFD\
     ),
@@ -89,7 +90,7 @@ void keyboard_post_init_user(void) {
     user_config.raw = eeconfig_read_user();
   
     rgb_matrix_set_flags(LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER);
-    rgb_matrix_sethsv(0,0,0xFF);
+    rgb_matrix_sethsv(HSV_WHITE);
 
   // Set default layer, if enabled
 }
@@ -173,28 +174,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
         case RGB_TOG:
             if (record->event.pressed) {
-              switch (rgb_matrix_get_flags()) {
-                case LED_FLAG_ALL: {
-                    rgb_matrix_set_flags(LED_FLAG_KEYLIGHT);
-                    rgb_matrix_set_color_all(0, 0, 0);
-                  }
-                  break;
-                case LED_FLAG_KEYLIGHT: {
-                    rgb_matrix_set_flags(LED_FLAG_UNDERGLOW);
-                    rgb_matrix_set_color_all(0, 0, 0);
-                  }
-                  break;
-                case LED_FLAG_UNDERGLOW: {
-                    rgb_matrix_set_flags(LED_FLAG_NONE);
-                    rgb_matrix_disable_noeeprom();
-                  }
-                  break;
-                default: {
-                    rgb_matrix_set_flags(LED_FLAG_ALL);
-                    rgb_matrix_enable_noeeprom();
-                  }
-                  break;
-              }
+                if(rgb_matrix_config.hsv.v == 0){
+                    rgb_matrix_sethsv(HSV_WHITE);
+                } else {
+                    rgb_matrix_sethsv(0,0,0);
+                }
             }
             return false;
         default:
@@ -220,6 +204,11 @@ void rgb_matrix_indicators_user(void) {
                 rgb_matrix_set_color(_KEY_COMM, RGB_GREEN);
                 rgb_matrix_set_color(_KEY_LBRC, RGB_WHITE);
                 rgb_matrix_set_color(_KEY_RBRC, RGB_WHITE);
+                if(rgb_matrix_config.hsv.v == 0){
+                    rgb_matrix_set_color(_KEY_A, 0x10, 0x10, 0x10);
+                } else {
+                    rgb_matrix_set_color(_KEY_A, RGB_WHITE);
+                }
                 rgb_matrix_set_color(_KEY_W, RGB_WHITE);
                 rgb_matrix_set_color(_KEY_S, RGB_WHITE);
                 int media[] = {_KEY_PGUP, _KEY_PGDN, _KEY_DEL, _KEY_LEFT, _KEY_DOWN, _KEY_RIGHT};
