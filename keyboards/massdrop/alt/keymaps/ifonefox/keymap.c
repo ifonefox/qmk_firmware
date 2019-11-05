@@ -58,7 +58,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_NUM] = LAYOUT(
         TG(_NUM),_______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
         _______, _______, _______, _______, _______, _______, _______, KC_KP_7, KC_KP_8, KC_KP_9, _______, _______, _______, _______, _______, \
-        TG(_NUM),_______, _______, _______, _______, _______, _______, KC_KP_4, KC_KP_5, KC_KP_6, _______, _______,          _______, _______, \
+        TG(_NUM),_______, _______, _______, _______, _______, _______, KC_KP_4, KC_KP_5, KC_KP_6, _______, _______,          NUM_ENT,  _______, \
         _______, _______, _______, _______, _______, _______, _______, KC_KP_1, KC_KP_2, KC_KP_3, _______, _______,          _______, _______, \
         _______, _______, _______,                            KC_KP_0,                            _______, _______, _______, _______, _______  \
     ),
@@ -124,6 +124,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case RGB_HUI2:
             if (record->event.pressed) {
                 cycle_colors();
+            }
+            return false;
+        case NUM_ENT:
+            if (record->event.pressed){
+                SEND_STRING(SS_TAP(X_ENTER));
+                layer_off(_NUM);
             }
             return false;
         case U_T_AUTO:
@@ -221,7 +227,7 @@ void rgb_matrix_indicators_user(void) {
                 break;
             case _NUM: {
                 rgb_matrix_set_color_all(0,0,0);
-                int keys[] = {_KEY_U,_KEY_I,_KEY_O ,_KEY_J, _KEY_K, _KEY_L,_KEY_M,_KEY_COMM,_KEY_DOT,_KEY_SPC,_KEY_CAPS, _KEY_ESC};
+                int keys[] = {_KEY_U,_KEY_I,_KEY_O ,_KEY_J, _KEY_K, _KEY_L,_KEY_M,_KEY_COMM,_KEY_DOT,_KEY_SPC,_KEY_CAPS, _KEY_ESC, _KEY_ENT};
                 rgb_matrix_set_color_array(keys, sizeof(keys)/sizeof(keys[0]), RGB_GREEN);
                 break;
             }   
