@@ -21,7 +21,24 @@ enum alt_layers {
     _FUNC,
     _NUM,
 };
+enum alt_keys {
+    _KEY_ESC, _KEY_1, _KEY_2, _KEY_3, _KEY_4, _KEY_5, _KEY_6, _KEY_7, _KEY_8, _KEY_9, _KEY_0, _KEY_MINS, _KEY_EQL, _KEY_BSPC, _KEY_DEL, 
+    _KEY_TAB, _KEY_Q, _KEY_W, _KEY_E, _KEY_R, _KEY_T, _KEY_Y, _KEY_U, _KEY_I, _KEY_O, _KEY_P, _KEY_LBRC, _KEY_RBRC, _KEY_BSLS, _KEY_HOME, 
+    _KEY_CAPS, _KEY_A, _KEY_S, _KEY_D, _KEY_F, _KEY_G, _KEY_H, _KEY_J, _KEY_K, _KEY_L, _KEY_SCLN, _KEY_QUOT, _KEY_ENT, _KEY_PGUP, 
+    _KEY_LSFT, _KEY_Z, _KEY_X, _KEY_C, _KEY_V, _KEY_B, _KEY_N, _KEY_M, _KEY_COMM, _KEY_DOT, _KEY_SLSH, _KEY_RSFT, _KEY_UP, _KEY_PGDN, 
+    _KEY_LCTL, _KEY_LALT, _KEY_LGUI, _KEY_SPC, _KEY_RGUI, _KEY_FN, _KEY_LEFT, _KEY_DOWN, _KEY_RGHT, 
+};
 
+int row_col_to_i(int row, int col){
+    if(row == 0 || row == 1 || row == 2){
+        return col + row * MATRIX_COLS;
+    } else if (row == 3){
+        return col + MATRIX_COLS * 3 - 1;
+    } else if (row == 4){
+        return col + MATRIX_COLS * 4 - 2;
+    } 
+    return -1;
+}
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QWERTY] = LAYOUT_65_ansi_blocker(
@@ -33,9 +50,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     [_FUNC] = LAYOUT_65_ansi_blocker(
         KC_GRV,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  _______, KC_MUTE, \
-        _______, _______, RGB_VAI, _______, _______ ,_______, _______, U_T_AUTO,U_T_AGCR,_______, KC_PSCR, KC_SLCK, KC_PAUS, _______, KC_END, \
-        _______, _______, RGB_VAD, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______, KC_VOLU, \
-        _______, _______, RGB_TOG, _______, _______, MD_BOOT, TG_NKRO, DBG_TOG,TG(_NUM), _______, _______, _______,          KC_PGUP, KC_VOLD, \
+        _______, RGB_MOD, RGB_HUI, _______, _______ ,_______, _______, U_T_AUTO,U_T_AGCR,_______, KC_PSCR, KC_SLCK, KC_PAUS, _______, KC_END, \
+        _______, _______, RGB_HUD, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______, KC_VOLU, \
+        _______, _______, _______, _______, _______, MD_BOOT, TG_NKRO, DBG_TOG,TG(_NUM), _______, _______, _______,          KC_PGUP, KC_VOLD, \
         _______, _______, _______,                            _______,                            _______, _______, KC_HOME, KC_PGDN, KC_END  \
     ),
     [_NUM] = LAYOUT(
@@ -69,8 +86,10 @@ void keyboard_post_init_user(void) {
   // Call the keymap level matrix init.
 
   // Read the user config from EEPROM
-  user_config.raw = eeconfig_read_user();
+    user_config.raw = eeconfig_read_user();
   
+    rgb_matrix_set_flags(LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER);
+    rgb_matrix_sethsv(0,0,0xFF/2);
 
   // Set default layer, if enabled
 }
@@ -176,28 +195,25 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return true; //Process all other keycodes normally
     }
 }
-/*
-void test(void){
-    rgb_matrix_set_color_all(0,0,0);
-    for(int row = 0; row < MATRIX_ROWS; row++){
-        for(int col = 0; row < MATRIX_COLS; col++){
-        }
+void rgb_matrix_set_color_array(int keys[], size_t len, uint8_t red, uint8_t green, uint8_t blue){
+    for(int i = 0; i < len; i++){
+        rgb_matrix_set_color(keys[i], red, green, blue);
     }
-}*/
-
+}
 void rgb_matrix_indicators_user(void) {
     // uint8_t this_led = host_keyboard_leds();
     if (!g_suspend_state && rgb_matrix_config.enable) {
         switch (biton32(layer_state)) {
             case _QWERTY: 
-                rgb_matrix_set_color_all(RGB_WHITE);
                 break;
             case _FUNC:
-                rgb_matrix_set_color_all(0,0,0);
+                //rgb_matrix_set_color_all(RGB_BLUE);
                 break;
-            case _NUM:
-                //test();
+            case _NUM: {
+                int keys[] = {_KEY_U,_KEY_I,_KEY_O ,_KEY_J, _KEY_K, _KEY_L,_KEY_M,_KEY_COMM,_KEY_DOT,_KEY_SPC,_KEY_CAPS, _KEY_ESC};
+                rgb_matrix_set_color_array(keys, sizeof(keys)/sizeof(keys[0]), RGB_GREEN);
                 break;
+            }   
         }
     }
 }
