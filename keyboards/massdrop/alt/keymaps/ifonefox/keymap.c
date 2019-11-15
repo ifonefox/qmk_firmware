@@ -1,5 +1,7 @@
 #include QMK_KEYBOARD_H
 
+
+
 enum alt_keycodes {
     U_T_AUTO = SAFE_RANGE, //USB Extra Port Toggle Auto Detect / Always Active
     U_T_AGCR,              //USB Toggle Automatic GCR control
@@ -8,8 +10,7 @@ enum alt_keycodes {
     DBG_KBD,               //DEBUG Toggle Keyboard Prints
     DBG_MOU,               //DEBUG Toggle Mouse Prints
     MD_BOOT,               //Restart into bootloader after hold timeout
-
-    RGB_HUI2,
+    // begin my additions
     NUM_ENT
 };
 
@@ -46,22 +47,22 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS, KC_EQL,  KC_BSPC, KC_DEL,  \
         KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC, KC_RBRC, KC_BSLS, KC_HOME, \
         KC_ESC , KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,          KC_ENT,  KC_PGUP, \
-        KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,          KC_UP,   KC_PGDN, \
+        KC_LSPO, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSPC,          KC_UP,   KC_PGDN, \
         KC_LCTL, KC_LALT, KC_LGUI,                            KC_SPC,                             KC_RGUI, MO(_FUNC),KC_LEFT,KC_DOWN, KC_RGHT  \
     ),
     [_FUNC] = LAYOUT_65_ansi_blocker(
         _______,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11, KC_F12,  _______, KC_MUTE, \
-        _______, RGB_MOD, RGB_VAI, _______, _______ ,_______, _______, U_T_AUTO,U_T_AGCR,_______, _______, KC_SLCK, KC_PAUS, _______, KC_END, \
-        _______, RGB_TOG, RGB_VAD, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______, KC_VOLU, \
+        _______, _______, _______, _______, RGB_TOG, RGB_VAI, _______, U_T_AUTO,U_T_AGCR,_______, _______, KC_SLCK, KC_PAUS, _______, KC_END,  \
+        KC_CAPS, _______, _______, _______, _______, RGB_VAD, _______, _______, _______, _______, _______, _______,          _______, KC_VOLU, \
         _______, _______, _______, _______, _______, MD_BOOT, TG_NKRO, DBG_TOG,TG(_NUM), _______, _______, _______,          _______, KC_VOLD, \
-        _______, _______, _______,                            _______,                            _______, _______, KC_MRWD, KC_MPLY, KC_MFFD\
+        _______, _______, _______,                            _______,                            _______, _______, KC_MRWD, KC_MPLY, KC_MFFD  \
     ),
     [_NUM] = LAYOUT(
         TG(_NUM),_______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
-        _______, _______, _______, _______, _______, _______, _______, KC_KP_7, KC_KP_8, KC_KP_9, _______, _______, _______, _______, _______, \
-        TG(_NUM),_______, _______, _______, _______, _______, _______, KC_KP_4, KC_KP_5, KC_KP_6, _______, _______,          NUM_ENT,  _______, \
-        _______, _______, _______, _______, _______, _______, _______, KC_KP_1, KC_KP_2, KC_KP_3, _______, _______,          _______, _______, \
-        _______, _______, _______,                            KC_KP_0,                            _______, _______, _______, _______, _______  \
+        _______, _______, _______, _______, _______, _______, KC_7,    KC_8,    KC_9,    _______, _______, _______, _______, _______, _______, \
+        TG(_NUM),_______, _______, _______, _______, _______, KC_4,    KC_5,    KC_6,    _______, _______, _______,          NUM_ENT, _______, \
+        _______, _______, _______, _______, _______, _______, KC_1,    KC_2,    KC_3,    _______, _______, _______,          _______, _______, \
+        _______, _______, _______,                            KC_0,                               _______, _______, _______, _______, _______  \
     ),
     /*
     [X] = LAYOUT(
@@ -122,17 +123,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     static uint32_t key_timer;
 
     switch (keycode) {
-        case RGB_HUI2:
-            if (record->event.pressed) {
-                cycle_colors();
-            }
-            return false;
-        case NUM_ENT:
-            if (record->event.pressed){
-                SEND_STRING(SS_TAP(X_ENTER));
-                layer_off(_NUM);
-            }
-            return false;
         case U_T_AUTO:
             if (record->event.pressed && MODS_SHIFT && MODS_CTRL) {
                 TOGGLE_FLAG_AND_PRINT(usb_extra_manual, "USB extra port manual mode");
@@ -172,15 +162,34 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 }
             }
             return false;
+        // begin my additions
+        case NUM_ENT:
+            if (record->event.pressed){
+                SEND_STRING(SS_TAP(X_ENTER));
+                layer_off(_NUM);
+            }
+            return false;
         case RGB_TOG:
             if (record->event.pressed) {
                 if(rgb_matrix_config.hsv.v == 0){
-                    rgb_matrix_sethsv(HSV_WHITE);
+                    rgb_matrix_sethsv(rgb_matrix_config.hsv.h, rgb_matrix_config.hsv.s, 0xFF);
                 } else {
-                    rgb_matrix_sethsv(0,0,0);
+                    rgb_matrix_sethsv(rgb_matrix_config.hsv.h, rgb_matrix_config.hsv.s, 0);
                 }
             }
             return false;
+        #ifdef EMAIL
+        case KC_F2:
+            if (MODS_SHIFT){
+                if(record->event.pressed){
+                    clear_mods();
+                    SEND_STRING(EMAIL);
+                }
+                return false;
+            } else {
+                return true;
+            }
+        #endif
         default:
             return true; //Process all other keycodes normally
     }
@@ -204,19 +213,18 @@ void rgb_matrix_indicators_user(void) {
                 rgb_matrix_set_color(_KEY_COMM, RGB_GREEN);
                 rgb_matrix_set_color(_KEY_LBRC, RGB_WHITE);
                 rgb_matrix_set_color(_KEY_RBRC, RGB_WHITE);
-                if(rgb_matrix_config.hsv.v == 0){
-                    rgb_matrix_set_color(_KEY_A, 0x10, 0x10, 0x10);
-                } else {
-                    rgb_matrix_set_color(_KEY_A, RGB_WHITE);
-                }
-                rgb_matrix_set_color(_KEY_W, RGB_WHITE);
-                rgb_matrix_set_color(_KEY_S, RGB_WHITE);
+                rgb_matrix_set_color(_KEY_T, RGB_WHITE);
+                rgb_matrix_set_color(_KEY_G, RGB_WHITE);
                 int media[] = {_KEY_PGUP, _KEY_PGDN, _KEY_DEL, _KEY_LEFT, _KEY_DOWN, _KEY_RIGHT};
                 rgb_matrix_set_color_array(media, sizeof(media)/sizeof(media[0]), RGB_RED);
+                HSV tog_hsv = {.h = 0, .s = 0, .v = (0xFF/2 + rgb_matrix_config.hsv.v/2)};
+                RGB tog_rgb = hsv_to_rgb(tog_hsv);
+                rgb_matrix_set_color(_KEY_R, tog_rgb.r, tog_rgb.g, tog_rgb.b);
+                rgb_matrix_set_color(_KEY_B, RGB_YELLOW);
                 break;
             case _NUM: {
                 rgb_matrix_set_color_all(0,0,0);
-                int keys[] = {_KEY_U,_KEY_I,_KEY_O ,_KEY_J, _KEY_K, _KEY_L,_KEY_M,_KEY_COMM,_KEY_DOT,_KEY_SPC,_KEY_CAPS, _KEY_ESC, _KEY_ENT};
+                int keys[] = {_KEY_Y, _KEY_U, _KEY_I, _KEY_H ,_KEY_J, _KEY_K, _KEY_N,_KEY_M,_KEY_COMM,_KEY_SPC,_KEY_CAPS, _KEY_ESC, _KEY_ENT};
                 rgb_matrix_set_color_array(keys, sizeof(keys)/sizeof(keys[0]), RGB_GREEN);
                 break;
             }   
