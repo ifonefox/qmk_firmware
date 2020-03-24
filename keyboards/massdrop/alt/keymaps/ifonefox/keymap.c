@@ -1,5 +1,8 @@
 #include QMK_KEYBOARD_H
 
+#if defined(__has_include) && __has_include("snippets.h")
+    #include "snippets.h"
+#endif
 
 
 enum alt_keycodes {
@@ -178,16 +181,28 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 }
             }
             return false;
-        #ifdef EMAIL
+        #ifdef SNIPPET_1
         case KC_F2:
             if (MODS_SHIFT){
                 if(record->event.pressed){
+                    uint8_t mods = get_mods();
                     clear_mods();
-                    SEND_STRING(EMAIL);
+                    SEND_STRING(SNIPPET_1);
+                    set_mods(mods);
+                    return false;
                 }
-                return false;
-            } else {
-                return true;
+            }
+        #endif
+        #ifdef SNIPPET_2
+        case KC_F3:
+            if (MODS_SHIFT){
+                if(record->event.pressed){
+                    uint8_t mods = get_mods();
+                    clear_mods();
+                    SEND_STRING(SNIPPET_2);
+                    set_mods(mods);
+                    return false;
+                }
             }
         #endif
         default:
