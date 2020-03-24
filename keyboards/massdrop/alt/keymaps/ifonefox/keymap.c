@@ -14,10 +14,8 @@ enum alt_keycodes {
     DBG_MOU,               //DEBUG Toggle Mouse Prints
     MD_BOOT,               //Restart into bootloader after hold timeout
     // begin my additions
-    NUM_ENT
+    NUM_TGL // Toggle whether NUM_ENT closes layer
 };
-
-#define TG_NKRO MAGIC_TOGGLE_NKRO //Toggle 6KRO / NKRO mode
 
 keymap_config_t keymap_config;
 
@@ -57,14 +55,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11, KC_F12,  _______, KC_MUTE, \
         _______, _______, _______, _______, RGB_TOG, RGB_VAI, _______, U_T_AUTO,U_T_AGCR,_______, _______, KC_SLCK, KC_PAUS, _______, KC_END,  \
         KC_CAPS, _______, _______, _______, _______, RGB_VAD, _______, _______, _______, _______, _______, _______,          _______, KC_VOLU, \
-        _______, _______, _______, _______, _______, MD_BOOT, TG_NKRO, DBG_TOG,TG(_NUM), _______, _______, _______,          _______, KC_VOLD, \
+        _______, _______, _______, _______, _______, MD_BOOT, NK_TOGG, DBG_TOG,TG(_NUM), _______, _______, _______,          _______, KC_VOLD, \
         _______, _______, _______,                            _______,                            _______, _______, KC_MRWD, KC_MPLY, KC_MFFD  \
     ),
     [_NUM] = LAYOUT(
         TG(_NUM),_______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
         _______, _______, _______, _______, _______, _______, KC_7,    KC_8,    KC_9,    _______, _______, _______, _______, _______, _______, \
-        TG(_NUM),_______, _______, _______, _______, _______, KC_4,    KC_5,    KC_6,    _______, _______, _______,          NUM_ENT, _______, \
-        _______, _______, _______, _______, _______, _______, KC_1,    KC_2,    KC_3,    _______, _______, _______,          _______, _______, \
+        TG(_NUM),_______, _______, _______, _______, _______, KC_4,    KC_5,    KC_6,    _______, _______, _______,          KC_ENT,  _______, \
+        _______, _______, _______, _______, _______, _______, KC_1,    KC_2,    KC_3,    _______, _______, NUM_TGL,          _______, _______, \
         _______, _______, _______,                            KC_0,                               _______, _______, _______, _______, _______  \
     ),
     /*
@@ -86,7 +84,10 @@ typedef union {
 } user_config_t;
 
 user_config_t user_config;
-
+typedef struct {
+    bool ent_leaves_num;
+} temp_user_config_t;
+temp_user_config_t temp_user_config;
 void keyboard_post_init_user(void) {
   // Call the keymap level matrix init.
 
@@ -96,7 +97,8 @@ void keyboard_post_init_user(void) {
     rgb_matrix_set_flags(LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER);
     rgb_matrix_sethsv(HSV_WHITE);
 
-  // Set default layer, if enabled
+  //init temp user config
+  temp_user_config.ent_leaves_num = true;
 }
 
 
@@ -166,12 +168,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
         // begin my additions
-        case NUM_ENT:
-            if (record->event.pressed){
-                SEND_STRING(SS_TAP(X_ENTER));
+        case KC_ENT:
+            if (record->event.pressed && get_highest_layer(layer_state) == _NUM && temp_user_config.ent_leaves_num){ 
                 layer_off(_NUM);
             }
-            return false;
+            return true;
+        case NUM_TGL: 
+            if(record->event.pressed){
+                temp_user_config.ent_leaves_num = !temp_user_config.ent_leaves_num ;
+            }
         case RGB_TOG:
             if (record->event.pressed) {
                 if(rgb_matrix_config.hsv.v == 0){
@@ -217,7 +222,7 @@ void rgb_matrix_set_color_array(int keys[], size_t len, uint8_t red, uint8_t gre
 void rgb_matrix_indicators_user(void) {
     // uint8_t this_led = host_keyboard_leds();
     if (!g_suspend_state && rgb_matrix_config.enable) {
-        switch (biton32(layer_state)) {
+        switch (get_highest_layer(layer_state)) {
             case _QWERTY: 
                 break;
             case _FUNC:
@@ -239,8 +244,11 @@ void rgb_matrix_indicators_user(void) {
                 break;
             case _NUM: {
                 rgb_matrix_set_color_all(0,0,0);
-                int keys[] = {_KEY_Y, _KEY_U, _KEY_I, _KEY_H ,_KEY_J, _KEY_K, _KEY_N,_KEY_M,_KEY_COMM,_KEY_SPC,_KEY_CAPS, _KEY_ESC, _KEY_ENT};
+                int keys[] = {_KEY_Y, _KEY_U, _KEY_I, _KEY_H ,_KEY_J, _KEY_K, _KEY_N,_KEY_M,_KEY_COMM,_KEY_SPC,_KEY_CAPS, _KEY_ESC, _KEY_RSFT};
                 rgb_matrix_set_color_array(keys, sizeof(keys)/sizeof(keys[0]), RGB_GREEN);
+                if(temp_user_config.ent_leaves_num){
+                    rgb_matrix_set_color(_KEY_ENT, RGB_GREEN);
+                }
                 break;
             }   
         }
