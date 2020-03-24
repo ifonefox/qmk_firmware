@@ -96,6 +96,7 @@ void keyboard_post_init_user(void) {
   
     rgb_matrix_set_flags(LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER);
     rgb_matrix_sethsv(HSV_WHITE);
+    rgb_matrix_sethsv(rgb_matrix_config.hsv.h, rgb_matrix_config.hsv.s, 0);
 
   //init temp user config
   temp_user_config.ent_leaves_num = true;
