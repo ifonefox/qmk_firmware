@@ -17,7 +17,7 @@ enum alt_keycodes {
     NUM_TGL // Toggle whether NUM_ENT closes layer
 };
 
-keymap_config_t keymap_config;
+// keymap_config_t keymap_config;
 
 enum alt_layers {
     _QWERTY,
@@ -103,6 +103,7 @@ void keyboard_post_init_user(void) {
 }
 
 
+/*
 // Runs just one time when the keyboard initializes.
 void matrix_init_user(void) {
 };
@@ -110,6 +111,7 @@ void matrix_init_user(void) {
 // Runs constantly in the background, in a loop.
 void matrix_scan_user(void) {
 };
+*/
 
 #define MODS_SHIFT  (get_mods() & MOD_BIT(KC_LSHIFT) || get_mods() & MOD_BIT(KC_RSHIFT))
 #define MODS_CTRL  (get_mods() & MOD_BIT(KC_LCTL) || get_mods() & MOD_BIT(KC_RCTRL))
